@@ -17,16 +17,23 @@ class LaserScanListener(object):
         # Subscribe topics and bind with callback functions
         rospy.Subscriber(_SCAN_TOPIC, LaserScan, self.__callback_scan)
         self.__lp = lg.LaserProjection()
+        self.pc2_msg = []
 
     def __callback_scan(self, msg):
         self.pc2_msg = self.__lp.projectLaser(msg)
         # convert it to a generator of the individual points
 
     def get_point_generator(self):
-        return pc2.read_points(self.pc2_msg)
+        if self.pc2_msg != []:
+            return pc2.read_points(self.pc2_msg)
+        else:
+            return []
 
     def get_point_list(self):
-        return pc2.read_points_list(self.pc2_msg)
+        if self.pc2_msg != []:
+            return pc2.read_points_list(self.pc2_msg)
+        else:
+            return []
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

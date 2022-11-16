@@ -14,16 +14,23 @@ class SonarScanListener(object):
     def __init__(self):
         # Subscribe topics and bind with callback functions
         rospy.Subscriber(_SONAR_TOPIC, PointCloud2, self.__callback_scan)
+        self.pc2_msg = []
 
     def __callback_scan(self, msg):
         ## extract ranges from message
         self.pc2_msg = msg
         
     def get_point_generator(self):
-        return pc2.read_points(self.pc2_msg)
+        if self.pc2_msg != []:
+            return pc2.read_points(self.pc2_msg)
+        else:
+            return []
 
     def get_point_list(self):
-        return pc2.read_points_list(self.pc2_msg)
+        if self.pc2_msg != []:
+            return pc2.read_points_list(self.pc2_msg)
+        else:
+            return []
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

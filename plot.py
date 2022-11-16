@@ -15,14 +15,16 @@ beam_half_angle=7.5 # haf of sonar angular beam width
 #  result: a tuple (rho,phi)
 #  rho - radius, phi - angle in degrees
 def cart2pol(x, y):
-    #TODO: calculations
+    rho = np.sqrt(x**2 + y**2)
+    phi = np.arctan2(y, x)
     return(rho, phi)
 
 # A function to transform polar  coordinates to Cartesian
 # input angle in degrees
 # returns a tuple (x,y)
 def pol2cart(rho, phi):
-    #TODO: calculations
+    x = rho * np.cos(phi)
+    y = rho * np.sin(phi)
     return(x, y)
 
 # plotting data
@@ -39,22 +41,29 @@ def plotarrows(ax,arrlist):
     X,Y,U,V = zip(*soa)
     ax.quiver(X,Y,U,V,angles='xy',scale_units='xy',scale=1)
 
+def plot(laser_list, sonar_list):
+    plt.figure()
+    ax = plt.gca()
+    ax.set_aspect('equal')
+    ax.set_xlim([-6,6])
+    ax.set_ylim([-6,6])
+    plt.ion()
+    plt.show()
 
-plt.figure()
-ax = plt.gca()
-ax.set_aspect('equal')
-ax.set_xlim([-6,6])
-ax.set_ylim([-6,6])
-plt.ion()
-plt.show()
+    xy_laser_list = []
+    for point in laser_list:
+            xy_laser_list.append([point.x, point.y])
 
-for i in range(loop_count):
-    skan=[[1,0],[1,1],[1.5,0.8]]
+    xy_sonar_list = []
+    for point in sonar_list:
+            xy_sonar_list.append([point.x, point.y])
+
     ax.cla()
-    plotsonars(ax,skan)  
-    plotarrows(ax,skan)
+    if xy_sonar_list != []:
+        plotsonars(ax,xy_sonar_list)  
+    if xy_laser_list != []:
+        plotarrows(ax,xy_laser_list)
     ax.set_xlim([-6,6])
     ax.set_ylim([-6,6])
     plt.draw()
     plt.pause(0.0001)
-    sleep(0.2)

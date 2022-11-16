@@ -13,10 +13,10 @@ class SonarScanListener(object):
     pc = []
     def __init__(self):
         # Subscribe topics and bind with callback functions
-        rospy.Subscriber(_SONAR_TOPIC, PointCloud2, self.__callback_scan)
+        self._sub = rospy.Subscriber(_SONAR_TOPIC, PointCloud2, self.callback_scan)
         self.pc2_msg = []
 
-    def __callback_scan(self, msg):
+    def callback_scan(self, msg):
         ## extract ranges from message
         self.pc2_msg = msg
         

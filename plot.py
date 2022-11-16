@@ -42,7 +42,7 @@ def plotarrows(ax,arrlist):
     ax.quiver(X,Y,U,V,angles='xy',scale_units='xy',scale=1)
 
 def plot(laser_list, sonar_list):
-    plt.figure()
+    plt.figure(1)
     ax = plt.gca()
     ax.set_aspect('equal')
     ax.set_xlim([-6,6])

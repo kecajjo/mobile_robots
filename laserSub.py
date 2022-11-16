@@ -15,7 +15,7 @@ _FRONT_ROBOT_POINT = 256
 class LaserScanListener(object):
     def __init__(self):
         # Subscribe topics and bind with callback functions
-        rospy.Subscriber(_SCAN_TOPIC, LaserScan, self.__callback_scan)
+        self.__sub = rospy.Subscriber(_SCAN_TOPIC, LaserScan, self.__callback_scan)
         self.__lp = lg.LaserProjection()
         self.pc2_msg = []
 

@@ -17,14 +17,14 @@ beam_half_angle=7.5 # haf of sonar angular beam width
 def cart2pol(x, y):
     rho = np.sqrt(x**2 + y**2)
     phi = np.arctan2(y, x)
-    return(rho, phi)
+    return(rho, math.degrees(phi))
 
 # A function to transform polar  coordinates to Cartesian
 # input angle in degrees
 # returns a tuple (x,y)
 def pol2cart(rho, phi):
-    x = rho * np.cos(phi)
-    y = rho * np.sin(phi)
+    x = rho * np.cos(math.radians(phi))
+    y = rho * np.sin(math.radians(phi))
     return(x, y)
 
 # plotting data
@@ -60,9 +60,13 @@ def plot(laser_list, sonar_list):
 
     ax.cla()
     if xy_sonar_list != []:
-        plotsonars(ax,xy_sonar_list)  
+        plotsonars(ax,xy_sonar_list)
+        # print("sonar:")  
+        # print (xy_sonar_list)
     if xy_laser_list != []:
         plotarrows(ax,xy_laser_list)
+        # print("laser")
+        # print(xy_laser_list)
     ax.set_xlim([-6,6])
     ax.set_ylim([-6,6])
     plt.draw()

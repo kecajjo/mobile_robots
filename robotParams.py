@@ -1,3 +1,5 @@
 #!/usr/bin/env python
 
 ROBOT_NUMBER = "1"
+ENCODER_TICKS_TICKS_MM = 132
+WHEEL_SEPARATION = 333

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 # run: python subscriber_scan.py 5  (where 5 is robot number)
-import sys
 import rospy
-from sensor_msgs.msg import PointCloud2, LaserScan
+import pickle
+import json
+from sensor_msgs.msg import LaserScan
 import laser_geometry.laser_geometry as lg
 import sensor_msgs.point_cloud2 as pc2
-import math
 from robotParams import *
 
 _SCAN_TOPIC = "/PIONIER"+ROBOT_NUMBER+"/scan"
@@ -34,11 +34,11 @@ class LaserScanListener(object):
             return pc2.read_points_list(self.pc2_msg)
         else:
             return []
-
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        sys.stderr.write('Usage: sys.argv[0] \n')
-        sys.exit(1)
-
-    nr=sys.argv[1]
-    listener()  
+        
+    def load_json_scan(self):
+        json_data = open('data/line_detection_1.json')
+        data = json.load(json_data)
+        with open("data/message.pickle", "rb") as f:
+                msg = pickle.load(f)
+        msg.ranges = data[0]["scan"]
+        self.__callback_scan(msg)

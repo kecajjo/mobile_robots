@@ -11,7 +11,7 @@ __MAX_ONE_ITERATION_PER_X_POINTS = 50
 __MIN_POINTS_TO_CALC_FACTOR = 1.5
 __RANDOM_SAMPLES = 5
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 class Model(abc.ABC):
     @abc.abstractmethod
@@ -28,11 +28,14 @@ class Model(abc.ABC):
 
 class Line(Model):
     def __init__(self):
-        self.max_dist = 1
+        self.max_dist = 0.05
+        self.max_dist_between_points = 0.04
 
     def calculate_model_params(self, points: list):
-        x = [point[0] for point in points]
-        y = [point[1] for point in points]
+        if len(points)<2:
+            return
+        x = [point.x for point in points]
+        y = [point.y for point in points]
         ab_params = np.polyfit(x, y, 1)
         a = ab_params[0]
         b = -1
@@ -45,17 +48,14 @@ class Line(Model):
         for p in points:
             if self.__dist(p, self.params) < self.max_dist:
                 fitting_points.append(p)
-        logging.debug(f"fitting_points before 2nd param calc: {fitting_points}")
         self.calculate_model_params(fitting_points)
         # recalculate points for better fit
         fitting_points = []
         for p in points:
             if self.__dist(p, self.params) < self.max_dist:
                 fitting_points.append(p)
-        logging.debug(f"fitting_points after 2nd param calc: {fitting_points}")
         # split line into multiple lines if break in between
-        fitting_points = self.__split_if_break_in_line(fitting_points, 10)
-        logging.debug(f"fitting_points after split: {fitting_points}")
+        fitting_points = self.__split_if_break_in_line(fitting_points, self.max_dist_between_points)
         return fitting_points
 
     def get_params(self):
@@ -63,28 +63,30 @@ class Line(Model):
 
     @staticmethod
     def __dist(point, params):
-        dist = abs((params[0] * point[0] + params[1] * point[1] + params[2])) / (math.sqrt(params[0] * params[0] + params[1] * params[1]))
+        dist = abs((params[0] * point.x + params[1] * point.y + params[2])) / (math.sqrt(params[0] * params[0] + params[1] * params[1]))
         return dist
     @staticmethod
     def __split_if_break_in_line(points, max_dist):
-        indices = [i + 1 for (x, y, i) in zip(points, points[1:], range(len(points))) if max_dist < math.dist(x, y)]
+        indices = [i + 1 for (x, y, i) in zip(points, points[1:], range(len(points))) if max_dist < math.sqrt((x.x-y.x)**2 + (x.y-y.y)**2)]
+        logging.debug(indices)
         result = [points[start:end] for start, end in zip([0] + indices, indices + [len(points)])]
         return result
 
 def remove_line_from_list(points: list, line: list):
     # delete points from line from points list
-    tmp = [item for sublist in tmp for item in sublist]
+    tmp = [item for sublist in line for item in sublist]
     new_points = []
     for p in points:
-        # not in wont work because reference vs copy check
-        if p not in tmp:
+        for lp in tmp:
+            if p.x == lp.x and p.y == lp.y:
+                break
+        else:
             new_points.append(p)
-    return new_points
+    points[:] = new_points
 
 def extract_line(points: list, threshold: int, model: Model):
-    lines = []
-    iterations = min(__MAX_ITER, len(points)/__MAX_ONE_ITERATION_PER_X_POINTS)
-    for i in range(iterations):
+    iterations = min(__MAX_ITER, int(len(points)/__MAX_ONE_ITERATION_PER_X_POINTS))
+    for _ in range(iterations):
         if len(points) < threshold*__MIN_POINTS_TO_CALC_FACTOR:
             break
         central_point = random.randint(0, len(points))
@@ -104,21 +106,16 @@ def extract_line(points: list, threshold: int, model: Model):
         num_samples = __RANDOM_SAMPLES
         if threshold < num_samples:
             num_samples = threshold/2
-        # random_points = random.sample(points[left_index:right_index], num_samples)
-        random_points_idx = random.sample(range(left_index, right_index), num_samples)
-        logging.debug("random points range: {}-{}".format(left_index, right_index))
-        logging.debug("random points indices: {}".format(random_points_idx))
-        model.calculate_model_params([points[idx] for idx in random_points_idx])
-        tmp = model.fit_points_to_model(points)
-        lines.append(tmp)
-        # delete points from line from points list
-        tmp = [item for sublist in tmp for item in sublist]
-        new_points = []
-        for p in points:
-            # not in wont work because reference vs copy check
-            if p not in tmp:
-                new_points.append(p)
-        points = new_points
+        random_points = random.sample(points[left_index:right_index], num_samples)
+        logging.debug("random points: {}".format(random_points))
+        model.calculate_model_params(random_points)
+        lines = model.fit_points_to_model(points)
+        
+        lines = [x for x in lines if len(x) >= threshold*__MIN_POINTS_TO_CALC_FACTOR]
+        if(len(lines) > 0):
+            # delete points from line from points list
+            remove_line_from_list(points, lines)
+            return lines
 
 if __name__ == "__main__":
     model = Line()

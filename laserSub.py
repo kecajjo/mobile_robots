@@ -36,7 +36,7 @@ class LaserScanListener(object):
             return []
         
     def load_json_scan(self):
-        json_data = open('data/line_detection_1.json')
+        json_data = open('data/line_detection_2.json')
         data = json.load(json_data)
         with open("data/message.pickle", "rb") as f:
                 msg = pickle.load(f)

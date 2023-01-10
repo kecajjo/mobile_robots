@@ -10,7 +10,7 @@ USER root
 
 USER developer
     RUN mkdir -p /home/developer/ws/src
-    RUN echo "source /opt/orocos/melodic/setup.bash" >> /home/developer/.bashrc
+    RUN echo "source /opt/ros/noetic/setup.bash" >> /home/developer/.bashrc
     WORKDIR /home/developer/ws
 
 ENTRYPOINT ["/bin/bash", "-c"]

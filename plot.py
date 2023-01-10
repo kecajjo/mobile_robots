@@ -4,6 +4,20 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.colors
+
+__COLORS = [
+    'tab:blue',
+    'tab:orange',
+    # 'tab:green',
+    'tab:red',
+    'tab:purple',
+    'tab:brown',
+    'tab:pink',
+    'tab:gray',
+    'tab:olive',
+    'tab:cyan'
+]
 
 from time import sleep
 
@@ -41,14 +55,19 @@ def plotarrows(ax,arrlist):
     X,Y,U,V = zip(*soa)
     ax.quiver(X,Y,U,V,angles='xy',scale_units='xy',scale=1)
 
-def plot(laser_list, sonar_list):
-    plt.figure(1)
+def plotpoints(points,color):
+    px = []
+    py = []
+    for point in points:
+        px.append(point.x)
+        py.append(point.y)
+    plt.plot(px,py, linestyle=" ", marker=".", color=color)
+    
+
+def plot(laser_list, sonar_list, points,lines):
+    fig = plt.figure(1)
     ax = plt.gca()
     ax.set_aspect('equal')
-    ax.set_xlim([-6,6])
-    ax.set_ylim([-6,6])
-    plt.ion()
-    plt.show()
 
     xy_laser_list = []
     for point in laser_list:
@@ -59,15 +78,18 @@ def plot(laser_list, sonar_list):
             xy_sonar_list.append([point.x, point.y])
 
     ax.cla()
-    if xy_sonar_list != []:
-        plotsonars(ax,xy_sonar_list)
-        # print("sonar:")  
-        # print (xy_sonar_list)
-    if xy_laser_list != []:
-        plotarrows(ax,xy_laser_list)
-        # print("laser")
-        # print(xy_laser_list)
-    ax.set_xlim([-6,6])
-    ax.set_ylim([-6,6])
+    # if xy_sonar_list != []:
+    #     plotsonars(ax,xy_sonar_list)
+    # if xy_laser_list != []:
+    #     plotarrows(ax,xy_laser_list)
+    if points != []:
+        plotpoints(points,"g")
+    if lines != []:
+        for idx, line in enumerate(lines):
+            plotpoints(line,__COLORS[idx%len(__COLORS)])
+    ax.set_xlim([-4,4])
+    ax.set_ylim([-4,4])
     plt.draw()
     plt.pause(0.0001)
+    plt.show()
+    return fig

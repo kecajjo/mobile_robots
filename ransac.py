@@ -86,8 +86,6 @@ def remove_line_from_list(points: list, line: list):
 
 def extract_line(points: list, threshold: int, model: Model):
     iterations = min(__MAX_ITER, int(len(points)/__MAX_ONE_ITERATION_PER_X_POINTS))
-    max_line_len = 0
-    max_lines = []
     for _ in range(iterations):
         if len(points) < threshold*__MIN_POINTS_TO_CALC_FACTOR:
             break
@@ -114,15 +112,10 @@ def extract_line(points: list, threshold: int, model: Model):
         lines = model.fit_points_to_model(points)
         
         lines = [x for x in lines if len(x) >= threshold*__MIN_POINTS_TO_CALC_FACTOR]
-        if len(lines) > 0:
-            longest_line = len(max(lines, key=lambda x: len(x)))
-            if longest_line > max_line_len:
-                max_line_len = longest_line
-                max_lines = lines
-    if len(max_lines) > 0:
-        # delete points from line from points list
-        remove_line_from_list(points, max_lines)
-        return max_lines
+        if(len(lines) > 0):
+            # delete points from line from points list
+            remove_line_from_list(points, lines)
+            return lines
 
 if __name__ == "__main__":
     model = Line()

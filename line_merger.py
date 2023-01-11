@@ -7,7 +7,8 @@ import copy
 import numpy as np
 import math
 
-__MERGE_TRESHOLD = 0.05
+__MERGE_DIST_TRESHOLD = 0.05
+__MERGE_ANG_TRESHOLD_DEG = 20
 
 def angle_from_points(points):
     list_x = [point.x for point in points]
@@ -33,6 +34,49 @@ def min_dist_between_lines(line_1, line_2):
 def merge_lines(line_1, line_2):
     line_1.extend(line_2)
     return line_1
+
+def point_between_2_points(p1, p2):
+    x = (p1.x + p2.x)/2
+    y = (p1.y + p2.y)/2
+    return x, y
+
+def merge_parallel_lines(lines):
+    while True: 
+        for line_1 in lines:
+            line_deleted = False
+            for line_2 in lines:
+                if abs(angle_from_points(line_1) - angle_from_points(line_2)) <= __MERGE_ANG_TRESHOLD_DEG:
+                    min_val, first_list = min_dist_between_lines(line_1, line_2)
+                    if min_val < __MERGE_DIST_TRESHOLD:
+                        if first_list == 0:
+                            merged_line = merge_lines(line_1, line_2)
+                        elif first_list == 1:
+                            merged_line = merge_lines(line_2, line_1)
+                        else:
+                            raise Exception
+                        lines.remove(line_1)
+                        lines.remove(line_2)
+                        lines.append(merged_line)
+                        line_deleted = True
+                        break
+            if line_deleted:
+                break
+        else:
+            break
+    return lines
+
+def find_corners(lines):
+    for line_1 in lines:
+        for line_2 in lines:
+            min_val, first_list = min_dist_between_lines(line_1, line_2)
+            if min_val < __MERGE_DIST_TRESHOLD:
+                if first_list == 0:
+                    merged_line = merge_lines(line_1, line_2)
+                elif first_list == 1:
+                    merged_line = merge_lines(line_2, line_1)
+                else:
+                    raise Exception
+            
     
     
     
@@ -52,31 +96,10 @@ while line_not_found_times < 5:
     else:
         lines += new_line
 
-for line in lines:
-    angle = angle_from_points(line)
-    print(angle)
+fig = plot.plot([], [], points, lines)
+plt.show()
 
-while True: 
-    for line_1 in lines:
-        line_deleted = False
-        for line_2 in lines:
-            min_val, first_list = min_dist_between_lines(line_1, line_2)
-            if min_val < __MERGE_TRESHOLD:
-                if first_list == 0:
-                    merged_line = merge_lines(line_1, line_2)
-                elif first_list == 1:
-                    merged_line = merge_lines(line_2, line_1)
-                else:
-                    raise Exception
-                lines.remove(line_1)
-                lines.remove(line_2)
-                lines.append(merged_line)
-                line_deleted = True
-                break
-        if line_deleted:
-            break
-    else:
-        break
+lines = merge_parallel_lines(lines)
                 
     # angle = angle_from_points(line)
     # print(angle)

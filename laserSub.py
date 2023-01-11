@@ -35,10 +35,10 @@ class LaserScanListener(object):
         else:
             return []
         
-    def load_json_scan(self):
-        json_data = open('data/line_detection_2.json')
+    def load_json_scan(self, i=0):
+        json_data = open('data/line_localization_1.json')
         data = json.load(json_data)
         with open("data/message.pickle", "rb") as f:
                 msg = pickle.load(f)
-        msg.ranges = data[0]["scan"]
+        msg.ranges = data[i]["scan"]
         self.__callback_scan(msg)

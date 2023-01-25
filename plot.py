@@ -24,7 +24,7 @@ from time import sleep
 loop_count=25  # drawing loop iterations
 beam_half_angle=7.5 # haf of sonar angular beam width
 
-# 
+#
 # A function to calculate Cartesian coordinates to polar
 #  result: a tuple (rho,phi)
 #  rho - radius, phi - angle in degrees
@@ -51,7 +51,7 @@ def plotsonars(ax,sonarreads):
 
 def plotarrows(ax,arrlist):
     y=[[0,0]+x for x in arrlist ]
-    soa =np.array(y) 
+    soa =np.array(y)
     X,Y,U,V = zip(*soa)
     ax.quiver(X,Y,U,V,angles='xy',scale_units='xy',scale=1)
 
@@ -62,9 +62,8 @@ def plotpoints(points,color):
         px.append(point.x)
         py.append(point.y)
     plt.plot(px,py, linestyle=" ", marker=".", color=color)
-    
 
-def plot(laser_list, sonar_list, points,lines):
+def plot(laser_list, sonar_list, points,lines, corners):
     fig = plt.figure(1)
     ax = plt.gca()
     ax.set_aspect('equal')
@@ -87,8 +86,14 @@ def plot(laser_list, sonar_list, points,lines):
     if lines != []:
         for idx, line in enumerate(lines):
             plotpoints(line,__COLORS[idx%len(__COLORS)])
-    ax.set_xlim([-4,4])
-    ax.set_ylim([-4,4])
+
+    if corners != []:
+        for corner in corners:
+            plt.plot(corner[0], corner[1], linestyle=" ", marker="X", color="black", markersize=10)
+
+
+    ax.set_xlim([-2,2])
+    ax.set_ylim([-2,2])
     plt.draw()
     plt.pause(0.0001)
     plt.show()

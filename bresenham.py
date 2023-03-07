@@ -85,7 +85,9 @@ def _sensor_bresenham_low(x0: int, y0: int, x1: int, y1: int, sign: int):
     if sign < 0:
         yi = -yi
     D = (dy*2) - dx
-    while x0!=x1:
+    # FIXME:
+    # 1. rather than using math.isclose we can make int casting before this point
+    while not math.isclose(x0, x1, rel_tol=1):
         # only if tile is inside a map (and not on the edge) set tile to unoccupied
         if(x0 > 0 and y0 > 0 and x0 < MAP_SIZE-1 and y0 < MAP_SIZE-1):
             cells_found.append(grid_pos_t(x0, y0))
@@ -112,7 +114,15 @@ def _sensor_bresenham_high(x0: int, y0: int, x1: int, y1: int, sign: int):
     if sign < 0:
         xi = -xi
     D = (dx*2) - dy
-    while y0!=y1:
+
+    # FIXME:
+    # 1. sometimes y0 is ascending and will never reach negative y1
+    # 2. rather than using math.isclose we can make int casting before this point
+    if y1 < 0:
+        sign = -1
+    else:
+        sign = 1
+    while not math.isclose(y0, y1, rel_tol=1):
         # only if tile is inside a map (and not on the edge) set tile to unoccupied
         if(x0 > 0 and y0 > 0 and x0 < MAP_SIZE-1 and y0 < MAP_SIZE-1):
             cells_found.append(grid_pos_t(x0, y0))

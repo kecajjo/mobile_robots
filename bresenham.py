@@ -12,15 +12,15 @@ class grid_pos_t():
 
 def map_Pose2Do_room(pos: Pose2D):
     grid_pos = grid_pos_t()
-    grid_pos.grid_x = (pos.x + CELL_SIZE_METER/2*(MAP_SIZE + 1))/CELL_SIZE_METER
-    grid_pos.grid_y = (pos.y + CELL_SIZE_METER/2*(MAP_SIZE + 1))/CELL_SIZE_METER
+    grid_pos.grid_x = int((pos.x + CELL_SIZE_METER/2*(MAP_SIZE + 1))/CELL_SIZE_METER)
+    grid_pos.grid_y = int((-pos.y + CELL_SIZE_METER/2*(MAP_SIZE + 1))/CELL_SIZE_METER)
     return grid_pos
 
 
 def map_room_to_position(grid_pos: grid_pos_t):
     pos = Pose2D()
     pos.x = CELL_SIZE_METER*grid_pos.grid_x - MAP_SIZE*CELL_SIZE_METER/2
-    pos.y = CELL_SIZE_METER*grid_pos.grid_y - MAP_SIZE*CELL_SIZE_METER/2
+    pos.y = -CELL_SIZE_METER*grid_pos.grid_y + MAP_SIZE*CELL_SIZE_METER/2
     return pos
 
 def laser_through_tiles(range: float, angle: float, ranger_pos: Pose2D, max_range: float):
@@ -39,7 +39,6 @@ def laser_through_tiles(range: float, angle: float, ranger_pos: Pose2D, max_rang
         obstacle_pos.x = math.cos((ranger_pos.theta + angle)) * range + ranger_pos.x
         obstacle_pos.y = math.sin((ranger_pos.theta + angle)) * range + ranger_pos.y
     
-
     # convert laser scan to grid and update map by adding unoccupied tiles
     grid_ranger_pos = map_Pose2Do_room(ranger_pos)
     grid_obstacle_pos = map_Pose2Do_room(obstacle_pos)
@@ -55,7 +54,7 @@ def laser_through_tiles(range: float, angle: float, ranger_pos: Pose2D, max_rang
                 and grid_obstacle_pos.grid_x < MAP_SIZE-1
                 and grid_obstacle_pos.grid_y < MAP_SIZE-1
                 ):
-            obstacle_tiles = [(grid_obstacle_pos.grid_y, grid_obstacle_pos.grid_x, True)] #add obstacle
+            obstacle_tiles = [grid_obstacle_pos] #add obstacle
     return empty_tiles, obstacle_tiles
         
 def _sensor_update_line(x0: int, y0: int, x1: int, y1: int):
@@ -84,13 +83,13 @@ def _sensor_bresenham_low(x0: int, y0: int, x1: int, y1: int, sign: int):
         dy = -dy
     if sign < 0:
         yi = -yi
-    D = (dy*2) - dx
-    # FIXME:
-    # 1. rather than using math.isclose we can make int casting before this point
-    while not math.isclose(x0, x1, rel_tol=1):
+    D = int((dy*2) - dx)
+    while not int(x0) == int(x1):
         # only if tile is inside a map (and not on the edge) set tile to unoccupied
         if(x0 > 0 and y0 > 0 and x0 < MAP_SIZE-1 and y0 < MAP_SIZE-1):
-            cells_found.append(grid_pos_t(x0, y0))
+            cells_found.append(grid_pos_t(int(x0), int(y0)))
+        else:
+            return cells_found
         if D > 0:
             y0 += yi
             D += (dy - dx)*2
@@ -113,19 +112,14 @@ def _sensor_bresenham_high(x0: int, y0: int, x1: int, y1: int, sign: int):
         dx = -dx
     if sign < 0:
         xi = -xi
-    D = (dx*2) - dy
+    D = int((dx*2) - dy)
 
-    # FIXME:
-    # 1. sometimes y0 is ascending and will never reach negative y1
-    # 2. rather than using math.isclose we can make int casting before this point
-    if y1 < 0:
-        sign = -1
-    else:
-        sign = 1
-    while not math.isclose(y0, y1, rel_tol=1):
+    while not int(y0) == int(y1):
         # only if tile is inside a map (and not on the edge) set tile to unoccupied
         if(x0 > 0 and y0 > 0 and x0 < MAP_SIZE-1 and y0 < MAP_SIZE-1):
-            cells_found.append(grid_pos_t(x0, y0))
+            cells_found.append(grid_pos_t(int(x0), int(y0)))
+        else:
+            return cells_found
         if D > 0:
             x0 += xi
             D += (dx - dy)*2

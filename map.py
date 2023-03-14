@@ -13,6 +13,7 @@ import math
 class OccupancyMap(object):
     def __init__(self):
         self.occupancy_map = np.ones((MAP_SIZE, MAP_SIZE)) / 2
+        self.obstacle_radius = int(INFLATION_RADIUS / CELL_SIZE_METER) + 1
         self.pub = rospy.Publisher('occupancy_grid', OccupancyGrid, queue_size=10, latch=True)
         self.skip_inf = True # flag for inf scan values skiping mode
 
@@ -33,7 +34,7 @@ class OccupancyMap(object):
                     self.cell_probability_update(tile, False)
                 for tile in obstacle_tiles:
                     self.cell_probability_update(tile, True)
-            angle+=laser_scan.angle_increment
+            angle+=(laser_scan.angle_max - laser_scan.angle_min)/len(laser_scan.ranges)
 
     def make_pose_2D(self, odometry_msg: Odometry):
         orientation_q = odometry_msg.pose.pose.orientation
@@ -69,6 +70,17 @@ class OccupancyMap(object):
         data = np.array(self.occupancy_map.flatten() * 100, dtype=np.int8)
         msg.data = list(data)
         self.pub.publish(msg)
+
+    def inflate_single_obstacle(self, center):
+        x,y = np.meshgrid(np.arange(self.occupancy_map.shape[1]), np.arange(self.occupancy_map.shape[0]))
+        distance = np.sqrt((x - center[1])**2 + (y - center[0])**2)
+        mask = distance <= self.obstacle_radius
+        self.occupancy_map[mask] = 1
+
+    def inflate_obstacles(self, threshold=0.51):
+        obstacles = np.argwhere(self.occupancy_map >= threshold)
+        for obstacle in obstacles:
+            self.inflate_single_obstacle(obstacle)
 
 
 if __name__ == '__main__':

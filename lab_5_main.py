@@ -45,6 +45,8 @@ def map_from_json(msg_count):
 if __name__ == '__main__':
     rospy.init_node('lab_5_main')
     plotter = Plotter()
-    # occupancy_map = map_from_json(9)
-    occupancy_map = map_from_bag(1500)
+    occupancy_map = map_from_json(55)
+    # occupancy_map = map_from_bag(700)
+    occupancy_map.inflate_obstacles()
+    occupancy_map.publish_map()
     plotter.plot_heatmap(occupancy_map.occupancy_map)

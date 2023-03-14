@@ -36,7 +36,8 @@ class LaserScanListener(object):
             return []
 
     def load_json_scan(self, i=4):
-        json_data = open('data/map_boxes_1.json')
+        json_data = open('data/map_big.json')
+        # json_data = open('data/map_boxes_1.json')
         data = json.load(json_data)
         with open("data/message.pickle", "rb") as f:
                 msg = pickle.load(f)

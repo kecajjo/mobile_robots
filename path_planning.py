@@ -19,7 +19,7 @@ def update_map(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, m
                     map[i+1][j-1],
                     map[i+1][j+1]
                 ]
-                neighbours = [neighbours != 0 and neighbours < max_iterations]
+                neighbours = [x for x in neighbours if x != 0 and not is_obstacle(x)]
                 if len(neighbours) > 0:
                     copy_map[i][j] = 1+min(neighbours)
         map = copy_map
@@ -35,7 +35,17 @@ def get_path_from_map(map: np.array, destination: grid_pos_t, start_pose: grid_p
     i = 1
     path = [start_pose]
     while x != destination.grid_x or y != destination.grid_y:
-        
+        i+=1
+        if map[y+1][x+1] == i:
+            path.append(grid_pos_t(x+1,y+1))
+        elif map[y+1][x-1] == i:
+            path.append(grid_pos_t(x-1,y+1))
+        elif map[y-1][x+1] == i:
+            path.append(grid_pos_t(x+1,y-1))
+        elif map[y-1][x-1] == i:
+            path.append(grid_pos_t(x-1,y-1))
+        else:
+            raise Exception("path is broken")
     return path
     
 def is_obstacle(obstacle):

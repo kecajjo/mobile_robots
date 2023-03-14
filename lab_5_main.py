@@ -49,4 +49,7 @@ if __name__ == '__main__':
     # occupancy_map = map_from_bag(700)
     occupancy_map.inflate_obstacles()
     occupancy_map.publish_map()
-    plotter.plot_heatmap(occupancy_map.occupancy_map)
+    map = occupancy_map.find_path()
+    # plotter.plot_heatmap(occupancy_map.occupancy_map)
+    plotter.plot_heatmap(map)
+

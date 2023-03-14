@@ -1,11 +1,10 @@
-from map import OccupancyMap
 from bresenham import grid_pos_t
 import numpy as np
 import copy
 
-def find_path(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, max_iterations = 10000):
+def find_path(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, max_iterations = 1000):
     map = update_map(map, destination, start_pose, max_iterations)
-    return get_path_from_map(map)
+    return map
 
 def update_map(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, max_iterations):
     map[destination.grid_y][destination.grid_x] = 1
@@ -21,7 +20,8 @@ def update_map(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, m
                 ]
                 neighbours = [x for x in neighbours if x != 0 and not is_obstacle(x)]
                 if len(neighbours) > 0:
-                    copy_map[i][j] = 1+min(neighbours)
+                    copy_map[i][j] = int(1+min(neighbours))
+                    print(neighbours)
         map = copy_map
         if map[start_pose.grid_y][start_pose.grid_x] != 0:
             break

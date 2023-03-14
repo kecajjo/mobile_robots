@@ -7,6 +7,7 @@ from nav_msgs.msg import Odometry, OccupancyGrid
 from geometry_msgs.msg import Pose2D
 from tf.transformations import euler_from_quaternion
 from robotParams import *
+import path_planning
 import bresenham
 import math
 
@@ -75,12 +76,18 @@ class OccupancyMap(object):
         x,y = np.meshgrid(np.arange(self.occupancy_map.shape[1]), np.arange(self.occupancy_map.shape[0]))
         distance = np.sqrt((x - center[1])**2 + (y - center[0])**2)
         mask = distance <= self.obstacle_radius
-        self.occupancy_map[mask] = 1
+        self.occupancy_map[mask] = 1.0
 
     def inflate_obstacles(self, threshold=0.51):
         obstacles = np.argwhere(self.occupancy_map >= threshold)
         for obstacle in obstacles:
             self.inflate_single_obstacle(obstacle)
+
+    def find_path(self):
+        self.occupancy_map[self.occupancy_map >= 0.51] = np.inf
+        self.occupancy_map[self.occupancy_map < 0.51] = 0.0
+        path_planning.find_path(map=self.occupancy_map, destination=bresenham.grid_pos_t(130, 250), start_pose=bresenham.grid_pos_t(216, 154))
+
 
 
 if __name__ == '__main__':

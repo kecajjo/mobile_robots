@@ -9,6 +9,10 @@ class grid_pos_t():
     def __init__(self, x=None, y=None):
         self.grid_x = x
         self.grid_y = y
+    def __str__(self):
+        return(' '.join(["y:", str(self.grid_y), "x:", str(self.grid_x)]))
+    def __repr__(self):
+        return(' '.join(["y:", str(self.grid_y), "x:", str(self.grid_x)]))
 
 def map_Pose2Do_room(pos: Pose2D):
     grid_pos = grid_pos_t()

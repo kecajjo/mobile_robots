@@ -86,7 +86,7 @@ class OccupancyMap(object):
     def find_path(self):
         self.occupancy_map[self.occupancy_map >= 0.51] = np.inf
         self.occupancy_map[self.occupancy_map < 0.51] = 0.0
-        path_planning.find_path(map=self.occupancy_map, destination=bresenham.grid_pos_t(130, 250), start_pose=bresenham.grid_pos_t(216, 154))
+        return path_planning.find_path(map=self.occupancy_map, destination=bresenham.grid_pos_t(130, 250), start_pose=bresenham.grid_pos_t(216, 154))
 
 
 

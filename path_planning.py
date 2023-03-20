@@ -4,24 +4,17 @@ import copy
 
 def find_path(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, max_iterations = 1000):
     map = update_map(map, destination, start_pose, max_iterations)
-    return map
+    return get_path_from_map(map, destination, start_pose), map
 
 def update_map(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, max_iterations):
     map[destination.grid_y][destination.grid_x] = 1
-    for _ in range(max_iterations):
+    for iter in range(1, max_iterations):
         copy_map = copy.deepcopy(map)
         for i in range(1, np.size(map, axis=0)-1):
             for j in range(1, np.size(map, axis=1)-1):
-                neighbours = [
-                    map[i-1][j-1],
-                    map[i-1][j+1],
-                    map[i+1][j-1],
-                    map[i+1][j+1]
-                ]
-                neighbours = [x for x in neighbours if x != 0 and not is_obstacle(x)]
-                if len(neighbours) > 0:
-                    copy_map[i][j] = int(1+min(neighbours))
-                    print(neighbours)
+                if copy_map[i][j] == 0:
+                    if map[i-1][j] == iter or map[i+1][j] == iter or map[i][j-1] == iter or map[i][j+1] == iter:
+                        copy_map[i][j] = iter+1
         map = copy_map
         if map[start_pose.grid_y][start_pose.grid_x] != 0:
             break
@@ -32,18 +25,22 @@ def update_map(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, m
 def get_path_from_map(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t):
     x = start_pose.grid_x
     y = start_pose.grid_y
-    i = 1
+    i = map[y][x]
     path = [start_pose]
     while x != destination.grid_x or y != destination.grid_y:
-        i+=1
-        if map[y+1][x+1] == i:
-            path.append(grid_pos_t(x+1,y+1))
-        elif map[y+1][x-1] == i:
-            path.append(grid_pos_t(x-1,y+1))
-        elif map[y-1][x+1] == i:
-            path.append(grid_pos_t(x+1,y-1))
-        elif map[y-1][x-1] == i:
-            path.append(grid_pos_t(x-1,y-1))
+        i-=1
+        if map[y][x+1] == i:
+            path.append(grid_pos_t(x+1,y))
+            x += 1
+        elif map[y][x-1] == i:
+            path.append(grid_pos_t(x-1,y))
+            x -= 1
+        elif map[y-1][x] == i:
+            path.append(grid_pos_t(x,y-1))
+            y -=1
+        elif map[y+1][x] == i:
+            path.append(grid_pos_t(x,y+1))
+            y += 1
         else:
             raise Exception("path is broken")
     return path

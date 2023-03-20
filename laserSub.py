@@ -34,11 +34,13 @@ class LaserScanListener(object):
             return pc2.read_points_list(self.pc2_msg)
         else:
             return []
-        
-    def load_json_scan(self, i=0):
-        json_data = open('data/line_localization_1.json')
+
+    def load_json_scan(self, i=4):
+        json_data = open('data/map_big.json')
+        # json_data = open('data/map_boxes_1.json')
         data = json.load(json_data)
         with open("data/message.pickle", "rb") as f:
                 msg = pickle.load(f)
         msg.ranges = data[i]["scan"]
-        self.__callback_scan(msg)
+        # self.__callback_scan(msg)
+        return msg, data[i]["pose"]

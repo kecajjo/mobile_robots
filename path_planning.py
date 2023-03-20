@@ -9,13 +9,11 @@ def find_path(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, ma
 def update_map(map: np.array, destination: grid_pos_t, start_pose: grid_pos_t, max_iterations):
     map[destination.grid_y][destination.grid_x] = 1
     for iter in range(1, max_iterations):
-        copy_map = copy.deepcopy(map)
         for i in range(1, np.size(map, axis=0)-1):
             for j in range(1, np.size(map, axis=1)-1):
-                if copy_map[i][j] == 0:
+                if map[i][j] == 0:
                     if map[i-1][j] == iter or map[i+1][j] == iter or map[i][j-1] == iter or map[i][j+1] == iter:
-                        copy_map[i][j] = iter+1
-        map = copy_map
+                        map[i][j] = iter+1
         if map[start_pose.grid_y][start_pose.grid_x] != 0:
             break
     else:

@@ -12,11 +12,11 @@ import bresenham
 import math
 
 class OccupancyMap(object):
-    def __init__(self):
+    def __init__(self, skip_inf=True):
         self.occupancy_map = np.ones((MAP_SIZE, MAP_SIZE)) / 2
         self.obstacle_radius = int(INFLATION_RADIUS / CELL_SIZE_METER) + 1
         self.pub = rospy.Publisher('occupancy_grid', OccupancyGrid, queue_size=10, latch=True)
-        self.skip_inf = True # flag for inf scan values skiping mode
+        self.skip_inf = skip_inf # flag for inf scan values skiping mode
 
     def update_map(self, laser_scan: LaserScan, pose: Pose2D):
         ranger_pose = pose
@@ -83,10 +83,10 @@ class OccupancyMap(object):
         for obstacle in obstacles:
             self.inflate_single_obstacle(obstacle)
 
-    def find_path(self):
+    def find_path(self, start_pose, end_pose):
         self.occupancy_map[self.occupancy_map >= 0.51] = np.inf
         self.occupancy_map[self.occupancy_map < 0.51] = 0.0
-        return path_planning.find_path(map=self.occupancy_map, destination=bresenham.grid_pos_t(130, 250), start_pose=bresenham.grid_pos_t(216, 154))
+        return path_planning.find_path(map=self.occupancy_map, destination=bresenham.map_Pose2Do_room(end_pose), start_pose=bresenham.map_Pose2Do_room(start_pose))
 
 
 

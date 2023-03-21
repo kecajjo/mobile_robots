@@ -43,6 +43,12 @@ def get_path_from_map(map: np.array, destination: grid_pos_t, start_pose: grid_p
             raise Exception("path is broken")
     return path
     
+def is_obstacle_on_path(map: np.array, path: list):
+    for node in path:
+        if is_obstacle(map[node.grid_y][node.grid_x]):
+            return True
+    return False
+
 def is_obstacle(obstacle):
     if np.isinf(obstacle):
         return True

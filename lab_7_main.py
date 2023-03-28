@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import math
 import matplotlib.pyplot as plt
 import rospy
 from threading import Lock
@@ -39,11 +40,10 @@ class RobotController(object):
         self._update_path_timer = rospy.Timer(rospy.Duration(0.1), self._plan_path_callback)
         self._velocities_timer = rospy.Timer(rospy.Duration(0.1), self._publish_velocities)
 
-        self._cmd_vel_pub = rospy.Publisher(_CMD_VEL_TOPIC, Twist)
+        self._cmd_vel_pub = rospy.Publisher(_CMD_VEL_TOPIC, Twist, queue_size=10)
 
         self.scan_msg = None
         self.pose2D = None
-        self.first_pose2D = None
         self.path = []
 
         self._map_lock = Lock()
@@ -54,9 +54,7 @@ class RobotController(object):
     def _callback_odom(self, msg: Odometry):
         with self._map_lock:
             self.pose2D = self._occupancy_map.make_pose_2D(msg)
-            if self.first_pose2D is None:
-                self.first_pose2D = self.pose2D
-
+            # print("CALLBACK: {}".format(self.pose2D))
 
     def _update_map_callback(self, event):
         if self.scan_msg is None or self.pose2D is None:
@@ -71,10 +69,12 @@ class RobotController(object):
         self._inflated_occupancy_map.inflate_obstacles()
 
         if self.path == [] or path_planning.is_obstacle_on_path(self._inflated_occupancy_map.occupancy_map, self.path):
+            print("OBSTACLE DETECTED ON PATH")
             self.path = []
             self.path, _ = self._inflated_occupancy_map.find_path(start_pose=self.pose2D, end_pose=Pose2D(2.0, 1.0, 0.0))
         self._inflated_occupancy_map.publish_map()
-        print(self.path)
+        # print("PLAN PATH: {}".format(self.pose2D))
+        # print(self.path)
 
     
     def _publish_velocities(self, event):
@@ -83,12 +83,41 @@ class RobotController(object):
             return
         
         if self.node_reached(self.path, self.pose2D):
+            print("Node reached")
             self.path.pop(0)
+            if self.path == []:
+                print("FINISHED")
+                return
         
         destination = bresenham.map_room_to_position(self.path[0])
-        # adjusted_start_pose = adjust_position(self.pose2D)
-        v, w = calculate_velocity(self.pose2D, destination)
+        # print(f"{destination=} {self.pose2D=}")
+        v, w = self.calculate_velocity(self.pose2D, destination)
         self.set_vel(v, w)
+
+    def calculate_velocity(self, start_pose: Pose2D, dest_pose: Pose2D):
+        diff = Pose2D()
+        diff.x = dest_pose.x - start_pose.x
+        diff.y = dest_pose.y - start_pose.y
+        
+        desired_heading = math.atan2(diff.y, diff.x)
+        if desired_heading - start_pose.theta > math.pi:
+            desired_heading -= 2*math.pi
+        elif desired_heading - start_pose.theta < -math.pi:
+            desired_heading += 2*math.pi
+        
+        if desired_heading - start_pose.theta > 0:
+            # v, w =turn_right()
+            w = 0.1
+        else:
+            # turn_left()
+            w = -0.1
+
+        v = 0.0
+        # print(f"{desired_heading=} {start_pose.theta=}")
+        # print(abs(desired_heading - start_pose.theta))
+        if abs(desired_heading - start_pose.theta) < math.pi/8:
+            v = 0.05
+        return v,w
 
     def set_vel(self, v, w):
         twist = Twist()

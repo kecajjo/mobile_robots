@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from copy import deepcopy
 import numpy as np
 import rospy
 from sensor_msgs.msg import LaserScan
@@ -19,7 +20,7 @@ class OccupancyMap(object):
         self.skip_inf = skip_inf # flag for inf scan values skiping mode
 
     def update_map(self, laser_scan: LaserScan, pose: Pose2D):
-        ranger_pose = pose
+        ranger_pose = deepcopy(pose)
         ranger_pose.x = math.cos(pose.theta) * LASER_SHIFT_METER + pose.x
         ranger_pose.y = math.sin(pose.theta) * LASER_SHIFT_METER + pose.y
         angle = laser_scan.angle_min
@@ -86,7 +87,7 @@ class OccupancyMap(object):
     def find_path(self, start_pose, end_pose):
         self.occupancy_map[self.occupancy_map >= 0.51] = np.inf
         self.occupancy_map[self.occupancy_map < 0.51] = 0.0
-        return path_planning.find_path(map=self.occupancy_map, destination=bresenham.map_Pose2Do_room(end_pose), start_pose=bresenham.map_Pose2Do_room(start_pose))
+        return path_planning.find_path(self.occupancy_map, bresenham.map_Pose2Do_room(end_pose), bresenham.map_Pose2Do_room(start_pose))
 
 
 
